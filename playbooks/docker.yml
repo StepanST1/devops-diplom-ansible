@@ -69,6 +69,11 @@
         key: "{{ lookup('ansible.builtin.file', local_github_key_path) }}"
         manage_dir: true
 
+    - name: Verify Docker
+      ansible.builtin.command: docker version --format '{{ "{{.Server.Version}}" }}'
+      register: docker_version
+      changed_when: false
+
     - name: Display Docker version
       ansible.builtin.debug:
         msg: "Docker version: {{ docker_version.stdout }}"
