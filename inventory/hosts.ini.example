@@ -1,0 +1,5 @@
+[app]
+VM_PUBLIC_IP ansible_user=ubuntu ansible_ssh_private_key_file=/path/to/private/key
+
+[app:vars]
+ansible_python_interpreter=/usr/bin/python3

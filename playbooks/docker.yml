@@ -1,0 +1,79 @@
+---
+- name: Install Docker
+  hosts: app
+  become: true
+  gather_facts: true
+
+  vars:
+    docker_user: "{{ ansible_user }}"
+
+  tasks:
+    - name: Install packages
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+        state: present
+        update_cache: true
+
+    - name: Create Docker directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Download Docker GPG key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: "0644"
+
+    - name: Add Docker apt repository
+      ansible.builtin.apt_repository:
+        repo: >-
+          deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc]
+          https://download.docker.com/linux/ubuntu
+          {{ ansible_distribution_release }} stable
+        state: present
+        filename: docker
+
+    - name: Install Docker and Compose plugin
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: true
+
+    - name: Start and enable Docker service
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add deployment user to docker group
+      ansible.builtin.user:
+        name: "{{ docker_user }}"
+        groups: docker
+        append: true
+
+    - name: Create application deployment directory
+      ansible.builtin.file:
+        path: /opt/devops-diploma-app
+        state: directory
+        owner: "{{ docker_user }}"
+        group: "{{ docker_user }}"
+        mode: "0755"
+
+    - name: Verify Docker Engine
+      ansible.builtin.command: docker version --format '{{ "{{.Server.Version}}" }}'
+      register: docker_version
+      changed_when: false
+
+    - name: Display Docker version
+      ansible.builtin.debug:
+        msg: "Docker Engine version: {{ docker_version.stdout }}"
