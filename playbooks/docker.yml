@@ -6,6 +6,7 @@
 
   vars:
     docker_user: "{{ ansible_user }}"
+    local_github_key_path: "/root/.ssh/github_actions_deploy.pub"
 
   tasks:
     - name: Install packages
@@ -61,10 +62,12 @@
         groups: docker
         append: true
 
-    - name: Verify Docker
-      ansible.builtin.command: docker version --format '{{ "{{.Server.Version}}" }}'
-      register: docker_version
-      changed_when: false
+    - name: Add GitHub Actions deploy public key to VM
+      ansible.posix.authorized_key:
+        user: "{{ docker_user }}"
+        state: present
+        key: "{{ lookup('ansible.builtin.file', local_github_key_path) }}"
+        manage_dir: true
 
     - name: Display Docker version
       ansible.builtin.debug:
