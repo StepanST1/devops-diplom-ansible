@@ -6,7 +6,7 @@
 
   vars:
     docker_user: "{{ ansible_user }}"
-    local_github_key_path: "/root/.ssh/github_actions_deploy.pub"
+    local_github_key_path: "~/.ssh/github_actions_deploy.pub"
 
   tasks:
     - name: Install packages
