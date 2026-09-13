@@ -69,6 +69,14 @@
         key: "{{ lookup('ansible.builtin.file', local_github_key_path) }}"
         manage_dir: true
 
+    - name: Create application deployment directory
+      ansible.builtin.file:
+        path: /opt/devops-diploma-app
+        state: directory
+        owner: "{{ docker_user }}"
+        group: "{{ docker_user }}"
+        mode: "0755"
+        
     - name: Verify Docker
       ansible.builtin.command: docker version --format '{{ "{{.Server.Version}}" }}'
       register: docker_version
